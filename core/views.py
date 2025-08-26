@@ -1,13 +1,14 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import BasePermission
 from django.conf import settings
 import bcrypt
 import jwt
 from datetime import datetime, timedelta, timezone
 
-from .serializers import UserRegisterSerializer, UserLoginSerializer
-from .models import User
+from .serializers import UserRegisterSerializer, UserLoginSerializer, AccessRuleSerializer
+from .models import User, AccessRule
 
 
 class UserRegisterView(APIView):
@@ -37,4 +38,25 @@ class UserLoginView(APIView):
                 return Response({'error': 'Неверный пароль'}, status=status.HTTP_401_UNAUTHORIZED)
             except User.DoesNotExist:
                 return Response({'error': 'Пользователь не найден'}, status=status.HTTP_401_UNAUTHORIZED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class IsAdmin(BasePermission):
+    def has_permission(self, request, view):
+        return request.user and request.user.role.name == 'admin'
+
+
+class AccessRuleView(APIView):
+    permission_classes = [IsAdmin]
+
+    def get(self, request):
+        rules = AccessRule.objects.all()
+        serializer = AccessRuleSerializer(rules, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = AccessRuleSerializer(data=request.data)
+        if serializer.is_valid():
+            rule = serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, Role
+from .models import User, Role, AccessRule, BusinessResource
 import bcrypt
 
 
@@ -30,3 +30,11 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 class UserLoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
+
+
+class AccessRuleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AccessRule
+        fields = (
+        'id', 'role', 'resource', 'read_permission', 'read_all_permission', 'create_permission', 'update_permission',
+        'delete_permission')
