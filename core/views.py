@@ -7,7 +7,7 @@ import bcrypt
 import jwt
 from datetime import datetime, timedelta, timezone
 
-from .serializers import UserRegisterSerializer, UserLoginSerializer, AccessRuleSerializer
+from .serializers import UserRegisterSerializer, UserLoginSerializer, AccessRuleSerializer, UserUpdateSerializer
 from .models import User, AccessRule
 
 
@@ -60,3 +60,23 @@ class AccessRuleView(APIView):
             rule = serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserUpdateView(APIView):
+    def patch(self, request):
+        if not request.user:
+            return Response({'error': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
+        serializer = UserUpdateSerializer(instance=request.user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'message': 'Профиль обновлён!'}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserDeleteView(APIView):
+    def delete(self, request):
+        if not request.user:
+            return Response({'error': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
+        request.user.is_active = False
+        request.user.save()
+        return Response({'message': 'Аккаунт удалён!'}, status=status.HTTP_200_OK)

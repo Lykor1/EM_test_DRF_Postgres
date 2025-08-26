@@ -36,5 +36,28 @@ class AccessRuleSerializer(serializers.ModelSerializer):
     class Meta:
         model = AccessRule
         fields = (
-        'id', 'role', 'resource', 'read_permission', 'read_all_permission', 'create_permission', 'update_permission',
-        'delete_permission')
+            'id', 'role', 'resource', 'read_permission', 'read_all_permission', 'create_permission',
+            'update_permission',
+            'delete_permission')
+
+
+class UserUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('first_name', 'last_name', 'patronymic', 'email')
+        extra_kwargs = {
+            'email': {'required': False},
+        }
+
+    def validate_email(self, value):
+        if value and User.objects.filter(email=value).exclude(id=self.instance.id).exists():
+            raise serializers.ValidationError('Этот email уже занят.')
+        return value
+
+    def update(self, instance, validated_data):
+        instance.first_name = validated_data.get('first_name', instance.first_name)
+        instance.last_name = validated_data.get('last_name', instance.last_name)
+        instance.patronymic = validated_data.get('patronymic', instance.patronymic)
+        instance.email = validated_data.get('email', instance.email)
+        instance.save()
+        return instance
