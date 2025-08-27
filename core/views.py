@@ -124,18 +124,19 @@ class UserLogoutView(APIView):
     def post(self, request):
         if not request.user:
             return Response({'error': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
-        auth_header = request.header.get('Authorization', '')
+        auth_header = request.headers.get('Authorization', '')
         if auth_header.startswith('Bearer '):
             token = auth_header.split(' ')[1]
             BlacklistToken.objects.create(token=token)
             return Response({'message': 'Успешный выход!'}, status=status.HTTP_200_OK)
-        return Response({'error': 'Требуется токен!'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': 'Authorization header required'}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 class ProductView(APIView):
     """
     Mock-представление для тестовых данных.
     """
+
     def get(self, request):
         return Response([
             {'id': 1, 'name': 'Product 1', 'owner_id': request.user.id},

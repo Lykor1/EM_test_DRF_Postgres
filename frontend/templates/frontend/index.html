@@ -1,0 +1,76 @@
+{% load static %}
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Тестирование API</title>
+    <link rel="stylesheet" href="{% static 'frontend/css/style.css' %}">
+</head>
+<body>
+{% csrf_token %}
+<h1>Тестирование API</h1>
+<div id="auth-status"></div>
+
+<h2>Регистрация</h2>
+<form id="register-form">
+    <input type="text" name="first_name" placeholder="Имя" required>
+    <input type="text" name="last_name" placeholder="Фамилия" required>
+    <input type="text" name="patronymic" placeholder="Отчество">
+    <input type="email" name="email" placeholder="Email" required>
+    <input type="password" name="password" placeholder="Пароль" required>
+    <input type="password" name="password2" placeholder="Повторите пароль" required>
+    <button type="submit">Зарегистрироваться</button>
+</form>
+<div id="register-response"></div>
+
+<h2>Вход</h2>
+<form id="login-form">
+    <input type="email" name="email" placeholder="Email" required>
+    <input type="password" name="password" placeholder="Пароль" required>
+    <button type="submit">Войти</button>
+</form>
+<div id="login-response"></div>
+
+<h2>Выход</h2>
+<button id="logout-btn">Выйти</button>
+<div id="logout-response"></div>
+
+<h2>Обновить профиль</h2>
+<form id="update-profile-form">
+    <input type="text" name="first_name" placeholder="Имя">
+    <input type="text" name="last_name" placeholder="Фамилия">
+    <input type="text" name="patronymic" placeholder="Отчество">
+    <input type="email" name="email" placeholder="Email">
+    <button type="submit">Обновить</button>
+</form>
+<div id="update-profile-response"></div>
+
+<h2>Удалить аккаунт</h2>
+<button id="delete-profile-btn">Удалить аккаунт</button>
+<div id="delete-profile-response"></div>
+
+<h2>Правила (admin)</h2>
+<button id="get-rules-btn">Получить правила</button>
+<form id="create-rule-form">
+    <input type="text" name="role_id" placeholder="ID роли" required>
+    <input type="text" name="resource_id" placeholder="ID ресурса" required>
+    <input type="checkbox" name="read_permission"> Чтение
+    <input type="checkbox" name="read_all_permission"> Чтение всех
+    <input type="checkbox" name="create_permission"> Создание
+    <input type="checkbox" name="update_permission"> Обновление
+    <input type="checkbox" name="delete_permission"> Удаление
+    <button type="submit">Создать правило</button>
+</form>
+<div id="rules-response"></div>
+
+<h2>Продукты</h2>
+<button id="get-products-btn">Получить продукты</button>
+<button id="create-product-btn">Создать продукт</button>
+<div id="products-response"></div>
+
+<script src="{% static 'frontend/js/script.js' %}"></script>
+</body>
+</html>
