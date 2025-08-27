@@ -3,10 +3,15 @@ from django.conf import settings
 from django.urls import resolve
 import jwt
 
-from .models import User, AccessRule
+from .models import User, AccessRule, BlacklistToken
 
 
 class AuthMiddleware:
+    """
+    Посредник для аутентификации.
+    Имеет поле с публичными URL-маршрутами, для которых не требуется токен
+    и поле с приватными URL-маршрутами (для ресурсов), для которых он необходим.
+    """
     def __init__(self, get_response):
         self.get_response = get_response
         self.public_routes = ('register', 'login')
@@ -25,6 +30,8 @@ class AuthMiddleware:
         auth_header = request.headers.get('Authorization', '')
         if auth_header.startswith('Bearer '):
             token = auth_header.split(' ')[1]
+            if BlacklistToken.objects.filter(token=token).exists():
+                return JsonResponse({'error': 'Токен в чёрном списке'}, status=401)
             try:
                 payload = jwt.decode(token, settings.SECRET_KEY_JWT, algorithms=[settings.JWT_ALGORITHM])
                 user = User.objects.get(id=payload['user_id'], is_active=True)

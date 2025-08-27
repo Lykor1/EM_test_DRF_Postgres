@@ -8,10 +8,14 @@ import jwt
 from datetime import datetime, timedelta, timezone
 
 from .serializers import UserRegisterSerializer, UserLoginSerializer, AccessRuleSerializer, UserUpdateSerializer
-from .models import User, AccessRule
+from .models import User, AccessRule, BlacklistToken
 
 
 class UserRegisterView(APIView):
+    """
+    Представление для регистрации.
+    Реализует только POST запросы.
+    """
     def post(self, request):
         serializer = UserRegisterSerializer(data=request.data)
         if serializer.is_valid():
@@ -21,6 +25,11 @@ class UserRegisterView(APIView):
 
 
 class UserLoginView(APIView):
+    """
+    Представление для входа.
+    Реализует только POST запрос.
+    Производит вход по email. Также задаёт время действия токена.
+    """
     def post(self, request):
         serializer = UserLoginSerializer(data=request.data)
         if serializer.is_valid():
@@ -42,11 +51,20 @@ class UserLoginView(APIView):
 
 
 class IsAdmin(BasePermission):
+    """
+    Класс для прав админа.
+    Реализовано, конечно, с использованием стандартного функционала DRF,
+    но иначе я не придумал.
+    """
     def has_permission(self, request, view):
         return request.user and request.user.role.name == 'admin'
 
 
 class AccessRuleView(APIView):
+    """
+    Представление для изменения прав доступа к ресурсам для админа.
+    Реализует и GET, и POST запросы.
+    """
     permission_classes = [IsAdmin]
 
     def get(self, request):
@@ -63,6 +81,11 @@ class AccessRuleView(APIView):
 
 
 class UserUpdateView(APIView):
+    """
+    Представление для обновления данных пользователя.
+    Реализует PATCH запросы.
+    Для доступа нужно быть авторизованным.
+    """
     def patch(self, request):
         if not request.user:
             return Response({'error': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
@@ -74,9 +97,30 @@ class UserUpdateView(APIView):
 
 
 class UserDeleteView(APIView):
+    """
+    Представление для мягкого удаления пользователя.
+    Реализует DELETE запрос.
+    """
     def delete(self, request):
         if not request.user:
             return Response({'error': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
         request.user.is_active = False
         request.user.save()
         return Response({'message': 'Аккаунт удалён!'}, status=status.HTTP_200_OK)
+
+
+class UserLogoutView(APIView):
+    """
+    Представление для выхода.
+    Реализует только POST запрос.
+    При выходе заносит токен пользователя в чёрный список для защиты.
+    """
+    def post(self, request):
+        if not request.user:
+            return Response({'error': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
+        auth_header = request.header.get('Authorization', '')
+        if auth_header.startswith('Bearer '):
+            token = auth_header.split(' ')[1]
+            BlacklistToken.objects.create(token=token)
+            return Response({'message': 'Успешный выход!'}, status=status.HTTP_200_OK)
+        return Response({'error': 'Требуется токен!'}, status=status.HTTP_400_BAD_REQUEST)

@@ -4,6 +4,11 @@ import bcrypt
 
 
 class UserRegisterSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для регистрации пользователя.
+    Имеет, помимо прочих, поля для ввода пароля и для подтверждения пароля.
+    Также имеет валидацию паролей и их хэширование.
+    """
     password = serializers.CharField(write_only=True)
     password2 = serializers.CharField(write_only=True)
 
@@ -28,11 +33,18 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 
 
 class UserLoginSerializer(serializers.Serializer):
+    """
+    Сериализатор для входа.
+    Логика входа вынесена в views.
+    """
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
 
 
 class AccessRuleSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для изменения прав доступа к ресурсам.
+    """
     class Meta:
         model = AccessRule
         fields = (
@@ -42,6 +54,10 @@ class AccessRuleSerializer(serializers.ModelSerializer):
 
 
 class UserUpdateSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для обновления данных пользователя.
+    Имеет валидацию для email.
+    """
     class Meta:
         model = User
         fields = ('first_name', 'last_name', 'patronymic', 'email')
