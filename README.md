@@ -24,3 +24,6 @@ DB_PASSWORD - пароль пользователя в Postgres.
 DB_HOST - хост в Postgres.
 DB_PORT - порт в Postgres.
 SECRET_KEY_JWT - секретный ключ для создания JWT-токенов.
+
+### Также реализован небольшой frontend для тестов.
+P.S. Админа необходимо создать отдельно :с
