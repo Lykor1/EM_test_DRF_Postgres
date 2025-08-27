@@ -16,6 +16,7 @@ class UserRegisterView(APIView):
     Представление для регистрации.
     Реализует только POST запросы.
     """
+
     def post(self, request):
         serializer = UserRegisterSerializer(data=request.data)
         if serializer.is_valid():
@@ -30,6 +31,7 @@ class UserLoginView(APIView):
     Реализует только POST запрос.
     Производит вход по email. Также задаёт время действия токена.
     """
+
     def post(self, request):
         serializer = UserLoginSerializer(data=request.data)
         if serializer.is_valid():
@@ -56,6 +58,7 @@ class IsAdmin(BasePermission):
     Реализовано, конечно, с использованием стандартного функционала DRF,
     но иначе я не придумал.
     """
+
     def has_permission(self, request, view):
         return request.user and request.user.role.name == 'admin'
 
@@ -86,6 +89,7 @@ class UserUpdateView(APIView):
     Реализует PATCH запросы.
     Для доступа нужно быть авторизованным.
     """
+
     def patch(self, request):
         if not request.user:
             return Response({'error': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
@@ -101,6 +105,7 @@ class UserDeleteView(APIView):
     Представление для мягкого удаления пользователя.
     Реализует DELETE запрос.
     """
+
     def delete(self, request):
         if not request.user:
             return Response({'error': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
@@ -115,6 +120,7 @@ class UserLogoutView(APIView):
     Реализует только POST запрос.
     При выходе заносит токен пользователя в чёрный список для защиты.
     """
+
     def post(self, request):
         if not request.user:
             return Response({'error': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
@@ -124,3 +130,17 @@ class UserLogoutView(APIView):
             BlacklistToken.objects.create(token=token)
             return Response({'message': 'Успешный выход!'}, status=status.HTTP_200_OK)
         return Response({'error': 'Требуется токен!'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ProductView(APIView):
+    """
+    Mock-представление для тестовых данных.
+    """
+    def get(self, request):
+        return Response([
+            {'id': 1, 'name': 'Product 1', 'owner_id': request.user.id},
+            {'id': 2, 'name': 'Product 2', 'owner_id': request.user.id}
+        ], status=status.HTTP_200_OK)
+
+    def post(self, request):
+        return Response({'message': 'Продукт создан!'}, status=status.HTTP_201_CREATED)
